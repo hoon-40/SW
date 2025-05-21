@@ -67,6 +67,17 @@ pipeline {
         }
         success {
             echo "Build and test succeeded"
+            // 워크스페이스에 텍스트 파일 쓰기
+            writeFile file: 'build_success.txt',
+                   text: """\
+                   Job: ${env.JOB_NAME}
+                   Build #: ${env.BUILD_NUMBER}
+                   Result: SUCCESS
+                   Time: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
+                   """.stripIndent()
+
+            // Artifact로 보관
+            archiveArtifacts artifacts: 'build_success.txt'
         }
     }
 }
