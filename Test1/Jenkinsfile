@@ -11,6 +11,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+        CLASS_DIR = 'classes'
+        REPORT_DIR = 'test-reports'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
                 checkout scm
             }
         }
@@ -78,6 +86,22 @@ pipeline {
 
             // Artifact로 보관
             archiveArtifacts artifacts: 'build_success.txt'
+
+            emailext(
+                    to:      'ttj0620@gmail.com',
+                    subject: "${env.JOB_NAME} #${env.BUILD_NUMBER} 성공",
+                    body:    """\
+                      안녕하세요,
+                      Jenkins 빌드가 성공했습니다.
+
+                      • Job: ${env.JOB_NAME}
+                      • 번호: ${env.BUILD_NUMBER}
+                      • 시간: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
+
+                      상세 로그는 Jenkins 콘솔 또는 첨부된 artifact(build_success.txt)를 확인하세요.
+                      """.stripIndent(),
+                      attachLog:   true
+                      )
         }
     }
 }
