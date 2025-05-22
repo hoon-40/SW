@@ -2,34 +2,21 @@ pipeline {
     agent any
 
     environment {
-        JUNIT_JAR_URL = 'https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.1/junit-platform-console-standalone-1.7.1.jar'
+        JUNIT_JAR_URL  = 'https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.1/junit-platform-console-standalone-1.7.1.jar'
         JUNIT_JAR_PATH = 'lib/junit.jar'
-        CLASS_DIR = 'classes'
-        REPORT_DIR = 'test-reports'
+        CLASS_DIR      = 'classes'
+        REPORT_DIR     = 'test-reports'
     }
 
     stages {
         stage('Checkout') {
-            steps {
-        CLASS_DIR = 'classes'
-        REPORT_DIR = 'test-reports'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Prepare') {
             steps {
                 sh '''
-                    mkdir -p ${CLASS_DIR}
-                    mkdir -p ${REPORT_DIR}
-                    mkdir -p lib
-                    echo "[+] Downloading JUnit JAR..."
+                    mkdir -p ${CLASS_DIR} ${REPORT_DIR} lib
                     curl -L -o ${JUNIT_JAR_PATH} ${JUNIT_JAR_URL}
                 '''
             }
@@ -38,7 +25,6 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    echo "[+] Compiling source files..."
                     cd Test1
                     find src -name "*.java" > sources.txt
                     javac -encoding UTF-8 -d ../${CLASS_DIR} -cp ../${JUNIT_JAR_PATH} @sources.txt
@@ -49,16 +35,15 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    echo "[+] Running tests with JUnit..."
                     java -jar ${JUNIT_JAR_PATH} \
-                        --class-path ${CLASS_DIR} \
-                        --scan-class-path \
-                        --details=tree \
-                        --details-theme=ascii \
-                        --reports-dir ${REPORT_DIR} \
-                        --config=junit.platform.output.capture.stdout=true \
-                        --config=junit.platform.reporting.open.xml.enabled=true \
-                        > ${REPORT_DIR}/test-output.txt
+                         --class-path ${CLASS_DIR} \
+                         --scan-class-path \
+                         --details=tree \
+                         --details-theme=ascii \
+                         --reports-dir ${REPORT_DIR} \
+                         --config=junit.platform.output.capture.stdout=true \
+                         --config=junit.platform.reporting.open.xml.enabled=true \
+                         > ${REPORT_DIR}/test-output.txt
                 '''
             }
         }
@@ -70,39 +55,35 @@ pipeline {
             junit "${REPORT_DIR}/**/*.xml"
             archiveArtifacts artifacts: "${REPORT_DIR}/**/*", allowEmptyArchive: true
         }
-        failure {
-            echo "Build or test failed"
-        }
-        success {
-            echo "Build and test succeeded"
-            // 워크스페이스에 텍스트 파일 쓰기
-            writeFile file: 'build_success.txt',
-                   text: """\
-                   Job: ${env.JOB_NAME}
-                   Build #: ${env.BUILD_NUMBER}
-                   Result: SUCCESS
-                   Time: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
-                   """.stripIndent()
 
-            // Artifact로 보관
+        success {
+            writeFile file: 'build_success.txt', text: """\
+Job: ${env.JOB_NAME}
+Build #: ${env.BUILD_NUMBER}
+Result: SUCCESS
+Time: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
+""".stripIndent()
+
             archiveArtifacts artifacts: 'build_success.txt'
 
             emailext(
-                    to:      'ttj0620@gmail.com',
-                    subject: "${env.JOB_NAME} #${env.BUILD_NUMBER} 성공",
-                    body:    """\
-                      안녕하세요,
-                      Jenkins 빌드가 성공했습니다.
+                to: 'ttj0620@gmail.com,clap518@naver.com',
+                subject: "success – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """\
+Jenkins 빌드가 성공했습니다.
 
-                      • Job: ${env.JOB_NAME}
-                      • 번호: ${env.BUILD_NUMBER}
-                      • 시간: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
+• Job: ${env.JOB_NAME}
+• 번호: ${env.BUILD_NUMBER}
+• 시간: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
 
-                      상세 로그는 Jenkins 콘솔 또는 첨부된 artifact(build_success.txt)를 확인하세요.
-                      """.stripIndent(),
-                      attachLog:   true
-                      )
-            }
+""".stripIndent(),
+                mimeType: 'text/html',
+                attachLog: true
+            )
+        }
+
+        failure {
+            echo "Build or test failed"
         }
     }
 }
