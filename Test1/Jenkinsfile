@@ -51,39 +51,21 @@ pipeline {
 
     post {
         always {
-            echo "[*] Archiving test results..."
             junit "${REPORT_DIR}/**/*.xml"
             archiveArtifacts artifacts: "${REPORT_DIR}/**/*", allowEmptyArchive: true
-        }
-
-        success {
-            writeFile file: 'build_success.txt', text: """\
-Job: ${env.JOB_NAME}
-Build #: ${env.BUILD_NUMBER}
-Result: SUCCESS
-Time: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
-""".stripIndent()
-
-            archiveArtifacts artifacts: 'build_success.txt'
 
             emailext(
-                to: 'ttj0620@gmail.com,clap518@naver.com',
-                subject: "success – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """\
-Jenkins 빌드가 성공했습니다.
+                to        : 'clap0518@gmail.com',
+                subject   : "[${currentBuild.currentResult}] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                mimeType  : 'text/plain',
+                body      : """\
+${env.JOB_NAME} #${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}
 
-• Job: ${env.JOB_NAME}
-• 번호: ${env.BUILD_NUMBER}
-• 시간: ${new Date().format("yyyy-MM-dd HH:mm:ss")}
-
-""".stripIndent(),
-                mimeType: 'text/html',
-                attachLog: true
+Console log: ${env.BUILD_URL}
+""",
+                attachLog : true,
+                debug     : true
             )
-        }
-
-        failure {
-            echo "Build or test failed"
         }
     }
 }
