@@ -63,8 +63,7 @@ ${env.JOB_NAME} #${env.BUILD_NUMBER} finished with status: ${currentBuild.curren
 
 Console log: ${env.BUILD_URL}
 """,
-                attachLog : true,
-                debug     : true
+                attachLog : true
             )
         }
     }
