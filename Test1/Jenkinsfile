@@ -55,7 +55,7 @@ pipeline {
             archiveArtifacts artifacts: "${REPORT_DIR}/**/*", allowEmptyArchive: true
 
             emailext(
-                to        : 'clap0518@naver.com',
+                to        : 'clap518@naver.com',
                 from      : 'clap0518@gmail.com',
                 subject   : "[${currentBuild.currentResult}] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 mimeType  : 'text/plain',
