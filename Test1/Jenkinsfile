@@ -56,7 +56,6 @@ pipeline {
 
             emailext(
                 to        : 'clap518@naver.com',
-                from      : 'clap0518@gmail.com',
                 subject   : "[${currentBuild.currentResult}] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 mimeType  : 'text/plain',
                 body      : """\
