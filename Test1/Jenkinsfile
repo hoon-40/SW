@@ -56,7 +56,7 @@ pipeline {
 
             script {
                 emailext(
-                    to: 'clap518@naver.com, ptj7149@naver.com, my38a@naver.com  ', 
+                    to: 'clap518@naver.com, ptj7149@naver.com, my38a@naver.com, sanghyeop28@gmail.com  ', 
                     subject: "[${currentBuild.currentResult}] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                     body: """
 ${env.JOB_NAME} #${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}
